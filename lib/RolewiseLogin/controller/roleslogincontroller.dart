@@ -95,7 +95,7 @@ class RoleLoginController extends GetxController {
       }
     } catch (e) {
       print("Error during login: $e");
-      Get.snackbar("Error", e.toString());
+      Get.snackbar("Error","Check Internet Connectivity");
     } finally {
       isLoading(false);
     }
