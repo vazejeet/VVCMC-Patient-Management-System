@@ -1,15 +1,13 @@
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:opd_app/RolewiseLogin/Hayatform/hayatPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../utils/color.dart';
 import 'package:fl_chart/fl_chart.dart';
-
-
 
 class DashboardControllers extends GetxController {
   var diagnosesCount = 0.obs;
@@ -25,15 +23,15 @@ class DashboardControllers extends GetxController {
   }
 
   bool isToday(DateTime date) {
-  final now = DateTime.now();
-  return date.year == now.year &&
-      date.month == now.month &&
-      date.day == now.day;
-}
-
+    final now = DateTime.now();
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
+  }
 
   Future<void> fetchCounts() async {
-    final hospitalData = await getHospitalAndDoctorNameFromPreferences(); // Retrieve both values
+    final hospitalData =
+        await getHospitalAndDoctorNameFromPreferences(); // Retrieve both values
 
     final hospitalId = hospitalData['hospitalId'];
     final doctorName = hospitalData['DoctorName'];
@@ -45,184 +43,178 @@ class DashboardControllers extends GetxController {
 
     try {
       // Get Diagnoses Count
-      diagnosesCount.value = await getDiagnosesCountByDoctor(hospitalId, doctorName);
+      diagnosesCount.value =
+          await getDiagnosesCountByDoctor(hospitalId, doctorName);
 
-
-      patientsCount.value = await getPatientsCount(hospitalId , doctorName);
+      patientsCount.value = await getPatientsCount(hospitalId, doctorName);
       // Get Pending Diagnoses Count
-      pendingDiagnosisCount.value = await getHospitalsCount(hospitalId, doctorName);
+      pendingDiagnosisCount.value =
+          await getHospitalsCount(hospitalId, doctorName);
     } catch (e) {
       print('Error fetching counts: $e');
     }
   }
 
+  Future<int> getPatientsCount(String hospitalId, String doctorName) async {
+    final url =
+        Uri.parse('https://vvcmhospitals.codifyinstitute.org/api/patients/')
+            .replace(queryParameters: {'hospitalId': hospitalId});
 
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final patients = data['patients'] as List;
 
+        String todayDate = DateFormat('yyyy-MM-dd')
+            .format(DateTime.now()); // Today's date in YYYY-MM-DD format
 
+        int todayPatientsCount = 0;
 
-Future<int> getPatientsCount(String hospitalId, String doctorName) async {
-  final url = Uri.parse('https://vvcmhospitals.codifyinstitute.org/api/patients/')
-      .replace(queryParameters: {'hospitalId': hospitalId});
+        for (var patient in patients) {
+          if (patient['DoctorName'] == doctorName &&
+              patient['Symptoms'] != null) {
+            for (var symptom in patient['Symptoms']) {
+              if (symptom['DiagnosisData'] != null &&
+                  symptom['DiagnosisData']['DateTime'] != null) {
+                // Extract Date from DateTime
+                String diagnosisDate =
+                    symptom['DiagnosisData']['DateTime'].substring(0, 10);
 
-  try {
-    final response = await http.get(url);
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final patients = data['patients'] as List;
-
-      String todayDate = DateFormat('yyyy-MM-dd').format(DateTime.now()); // Today's date in YYYY-MM-DD format
-
-      int todayPatientsCount = 0;
-
-      for (var patient in patients) {
-        if (patient['DoctorName'] == doctorName && patient['Symptoms'] != null) {
-          for (var symptom in patient['Symptoms']) {
-            if (symptom['DiagnosisData'] != null &&
-                symptom['DiagnosisData']['DateTime'] != null) {
-              
-              // Extract Date from DateTime
-              String diagnosisDate = symptom['DiagnosisData']['DateTime'].substring(0, 10);
-              
-              // Compare with today's date
-              if (diagnosisDate == todayDate) {
-                todayPatientsCount++;
-                break; // Once we count one symptom for a patient, we move to next patient
+                // Compare with today's date
+                if (diagnosisDate == todayDate) {
+                  todayPatientsCount++;
+                  break; // Once we count one symptom for a patient, we move to next patient
+                }
               }
             }
           }
         }
-      }
 
-      return todayPatientsCount;
-    } else {
-      print("Failed to fetch data. Status Code: ${response.statusCode}");
+        return todayPatientsCount;
+      } else {
+        print("Failed to fetch data. Status Code: ${response.statusCode}");
+        return 0;
+      }
+    } catch (e) {
+      print("Error fetching today's patients count: $e");
       return 0;
     }
-  } catch (e) {
-    print("Error fetching today's patients count: $e");
-    return 0;
   }
-}
 
+  Future<int> getHospitalsCount(String hospitalId, String doctorName) async {
+    final todayDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final url =
+        Uri.parse('https://vvcmhospitals.codifyinstitute.org/api/patients')
+            .replace(queryParameters: {'hospitalId': hospitalId});
 
+    try {
+      final response = await http.get(url);
 
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final patients = data['patients'] as List;
 
-Future<int> getHospitalsCount(String hospitalId, String doctorName) async {
-  final todayDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
-  final url = Uri.parse('https://vvcmhospitals.codifyinstitute.org/api/patients')
-      .replace(queryParameters: {'hospitalId': hospitalId});
-  
-  try {
-    final response = await http.get(url);
+        Set<String> patientsWithNullMedicine =
+            {}; // To track unique patients with null or empty Medicine
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final patients = data['patients'] as List;
+        for (var patient in patients) {
+          if (patient['DoctorName'] == doctorName &&
+              patient['Symptoms'] != null) {
+            // Sort the symptoms by DateTime to ensure we are checking the latest
+            List symptoms = patient['Symptoms'];
+            symptoms.sort((a, b) {
+              DateTime dateA = DateTime.parse(a['DiagnosisData']['DateTime']);
+              DateTime dateB = DateTime.parse(b['DiagnosisData']['DateTime']);
+              return dateB.compareTo(
+                  dateA); // Sort in descending order (most recent first)
+            });
 
-      Set<String> patientsWithNullMedicine = {};  // To track unique patients with null or empty Medicine
+            // Check only the latest symptom for today
+            var latestSymptom = symptoms.first;
+            String diagnosisDate =
+                latestSymptom['DiagnosisData']['DateTime'].substring(0, 10);
 
-      for (var patient in patients) {
-        if (patient['DoctorName'] == doctorName && patient['Symptoms'] != null) {
-          // Sort the symptoms by DateTime to ensure we are checking the latest
-          List symptoms = patient['Symptoms'];
-          symptoms.sort((a, b) {
-            DateTime dateA = DateTime.parse(a['DiagnosisData']['DateTime']);
-            DateTime dateB = DateTime.parse(b['DiagnosisData']['DateTime']);
-            return dateB.compareTo(dateA);  // Sort in descending order (most recent first)
-          });
-
-          // Check only the latest symptom for today
-          var latestSymptom = symptoms.first;
-          String diagnosisDate = latestSymptom['DiagnosisData']['DateTime'].substring(0, 10);
-
-          // Only consider the symptom if it's from today
-          if (diagnosisDate == todayDate) {
-            // Check if Medicine is null or empty
-            if (latestSymptom['DiagnosisData']['Medicine'] == null || latestSymptom['DiagnosisData']['Medicine'].isEmpty) {
-              patientsWithNullMedicine.add(patient['_id']);  // Add patient ID to the set if Medicine is null or empty
+            // Only consider the symptom if it's from today
+            if (diagnosisDate == todayDate) {
+              // Check if Medicine is null or empty
+              if (latestSymptom['DiagnosisData']['Medicine'] == null ||
+                  latestSymptom['DiagnosisData']['Medicine'].isEmpty) {
+                patientsWithNullMedicine.add(patient[
+                    '_id']); // Add patient ID to the set if Medicine is null or empty
+              }
             }
           }
         }
-      }
 
-      return patientsWithNullMedicine.length;  // Return the number of unique patients with null or empty Medicine today
-    } else {
-      print("Failed to fetch patients. Status Code: ${response.statusCode}");
+        return patientsWithNullMedicine
+            .length; // Return the number of unique patients with null or empty Medicine today
+      } else {
+        print("Failed to fetch patients. Status Code: ${response.statusCode}");
+        return 0;
+      }
+    } catch (e) {
+      print("Error fetching patients with null Medicine today: $e");
       return 0;
     }
-  } catch (e) {
-    print("Error fetching patients with null Medicine today: $e");
-    return 0;
   }
-}
 
+  Future<int> getDiagnosesCountByDoctor(
+      String hospitalId, String doctorName) async {
+    final url = Uri.parse(
+            'https://vvcmhospitals.codifyinstitute.org/api/patients/patients/diagnoses')
+        .replace(queryParameters: {'hospitalId': hospitalId});
 
+    try {
+      final response = await http.get(url);
+      final data = jsonDecode(response.body);
+      final patients = data['patients'] as List;
 
-Future<int> getDiagnosesCountByDoctor(String hospitalId, String doctorName) async {
-  final url = Uri.parse('https://vvcmhospitals.codifyinstitute.org/api/patients/patients/diagnoses')
-      .replace(queryParameters: {'hospitalId': hospitalId});
-  
-  try {
-    final response = await http.get(url);
-    final data = jsonDecode(response.body);
-    final patients = data['patients'] as List;
+      // Filter and count diagnoses for today based on doctor's name
+      final todayDiagnoses = patients.fold(0, (acc, patient) {
+        if (patient['CreatedBy'] == hospitalId) {
+          final symptoms = patient['Symptoms'] as List?;
+          if (symptoms != null) {
+            // Filter symptoms based on doctorName and today's date
+            final todaySymptoms = symptoms.where((symptom) {
+              final symptomDateTime = DateTime.parse(symptom['DateTime']);
+              final isDoctorMatch = symptom['DoctorName'] == doctorName;
+              final isTodayMatch = isToday(
+                  symptomDateTime); // Check if the symptom is from today
+              return isDoctorMatch && isTodayMatch;
+            }).toList();
 
-    // Filter and count diagnoses for today based on doctor's name
-    final todayDiagnoses = patients.fold(0, (acc, patient) {
-      if (patient['CreatedBy'] == hospitalId) {
-        final symptoms = patient['Symptoms'] as List?;
-        if (symptoms != null) {
-          // Filter symptoms based on doctorName and today's date
-          final todaySymptoms = symptoms.where((symptom) {
-            final symptomDateTime = DateTime.parse(symptom['DateTime']);
-            final isDoctorMatch = symptom['DoctorName'] == doctorName;
-            final isTodayMatch = isToday(symptomDateTime);  // Check if the symptom is from today
-            return isDoctorMatch && isTodayMatch;
-          }).toList();
-
-          // Add the count of matching symptoms
-          return acc + todaySymptoms.length;
+            // Add the count of matching symptoms
+            return acc + todaySymptoms.length;
+          }
         }
-      }
-      return acc;
-    });
+        return acc;
+      });
 
-    return todayDiagnoses;
-  } catch (e) {
-    print("Error fetching diagnoses count by doctor: $e");
-    return 0;
+      return todayDiagnoses;
+    } catch (e) {
+      print("Error fetching diagnoses count by doctor: $e");
+      return 0;
+    }
   }
-}
-
 
   Future<Map<String, String?>> getHospitalAndDoctorNameFromPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    
+
     // Retrieve hospitalId and doctorName from SharedPreferences
     String? hospitalId = prefs.getString('HospitalId');
     String? doctorName = prefs.getString('UserName');
-    
+
     // Return both values as a Map
-    return {
-      'hospitalId': hospitalId,
-      'DoctorName': doctorName
-    };
+    return {'hospitalId': hospitalId, 'DoctorName': doctorName};
   }
-
-
-
 }
-
-
-
-
 
 class DashboardPage extends StatelessWidget {
   final DashboardControllers controller = Get.put(DashboardControllers());
 
   @override
   Widget build(BuildContext context) {
-
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -247,20 +239,16 @@ class DashboardPage extends StatelessWidget {
           color: Appcolor.pure,
           padding: const EdgeInsets.all(16.0),
           child: FutureBuilder<void>(
-            future: controller
-                .fetchCounts(), 
+            future: controller.fetchCounts(),
             builder: (context, snapshot) {
-            
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              
               if (snapshot.hasError) {
                 return Center(child: Text('Error: ${snapshot.error}'));
               }
 
-              
               return RefreshIndicator(
                 onRefresh: controller.fetchCounts,
                 child: SingleChildScrollView(
@@ -293,16 +281,15 @@ class DashboardPage extends StatelessWidget {
                         child: Obx(() {
                           return PieChart(
                             PieChartData(
-                              sectionsSpace: 0, 
-                              centerSpaceRadius:
-                                  50, 
+                              sectionsSpace: 0,
+                              centerSpaceRadius: 50,
                               sections: [
                                 PieChartSectionData(
                                   value: controller.diagnosesCount.value
                                       .toDouble(),
                                   color: Appcolor.Primary,
                                   title: 'Diagnosis ',
-                                  radius: 50, 
+                                  radius: 50,
                                   titleStyle: const TextStyle(
                                     color: Appcolor.pure,
                                     fontWeight: FontWeight.bold,
@@ -346,6 +333,16 @@ class DashboardPage extends StatelessWidget {
             },
           ),
         ),
+        // floatingActionButton: FloatingActionButton(
+        //     child: const Icon(
+        //       Icons.add,
+        //       color: Appcolor.pure,
+        //     ),
+        //     backgroundColor: Appcolor.Primary,
+        //     onPressed: () {
+        //       // Get.to(PatientTabPage());
+        //       Get.to(HayatFormPage());
+        //     }),
       ),
     );
   }

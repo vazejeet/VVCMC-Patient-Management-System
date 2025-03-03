@@ -1,4 +1,3 @@
-import 'package:opd_app/RolewiseLogin/DataEntry/controllers/patients/patientAdd.dart';
 import 'package:opd_app/RolewiseLogin/DataEntry/views/dataentrybottombar.dart';
 import 'package:opd_app/utils/color.dart';
 import 'package:http/http.dart' as http;
@@ -6,6 +5,8 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../controllers/patients/patientAdd.dart';
 
 class PatientTwoController extends GetxController {
   // Use unique GlobalKeys for each form
@@ -212,7 +213,8 @@ class PatientTwoController extends GetxController {
           onTap: () {
             Get.back(); // Close the dialog
             // Navigate to Add New Patient page (replace with your route)
-            Get.to(() => PatientForm());
+            Get.to(() => PatientForm(),
+                        arguments: {"mobile": mobileNo.value});
           },
           child: Container(
             padding:
@@ -234,31 +236,6 @@ class PatientTwoController extends GetxController {
     );
   }
 
-  // // Fetch patients based on Mobile Number
-  // Future<void> fetchPatientsByMobile(String mobileNo) async {
-  //   var url = 'https://vvcmhospitals.codifyinstitute.org/api/patients/search?mobileNo=$mobileNo';
-  //   try {
-  //     var response = await http.get(Uri.parse(url));
-
-  //     if (response.statusCode == 200) {
-  //       var data = jsonDecode(response.body);
-
-  //       if (data['message'] == 'Patients found' && data['patients'].isNotEmpty) {
-  //         patientList = data['patients'];
-  //         _showPatientNameSelectionDialog();
-  //       } else {
-  //         Get.snackbar('Error', 'No patients found with this mobile number.',backgroundColor: Colors.redAccent);
-  //       }
-  //     } else {
-  //        Get.snackbar('Add New Patient', 'No patients found with this mobile number.',backgroundColor: Colors.redAccent);
-  //       // Get.snackbar('Error', 'Failed to fetch patient data: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     Get.snackbar('Error', 'Failed to fetch patient data: ');
-  //   }
-  // }
-
-  // Show a dialog to select patient name
   void _showPatientNameSelectionDialog() {
     showDialog(
       context: Get.context!,
@@ -266,20 +243,52 @@ class PatientTwoController extends GetxController {
         return AlertDialog(
           title: Text('Select Patient'),
           content: Container(
-            height: 200,
+            height: 300,
             width: 300,
-            child: ListView.builder(
-              itemCount: patientList.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(patientList[index]['PatientName']),
+            child: Column(
+              children: [
+                Container(
+                  height: 250,
+                  width: 300,
+                  child: ListView.builder(
+                    itemCount: patientList.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(patientList[index]['PatientName']),
+                        onTap: () {
+                          // Set the selected patient data using RxString
+                          _fetchPatientData(patientList[index]);
+                          Navigator.pop(context); // Close the dialog
+                        },
+                      );
+                    },
+                  ),
+                ),
+                GestureDetector(
                   onTap: () {
-                    // Set the selected patient data using RxString
-                    _fetchPatientData(patientList[index]);
-                    Navigator.pop(context); // Close the dialog
+                    Get.back(); // Close the dialog
+
+                    Get.to(() => PatientForm(),
+                        arguments: {"mobile": mobileNo.value});
                   },
-                );
-              },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12.0, horizontal: 20.0),
+                    decoration: BoxDecoration(
+                      color:
+                          Appcolor.Primary, // Background color for the button
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'Add New Patient',
+                      style: TextStyle(
+                        color: Colors.white, // White text color
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         );

@@ -95,7 +95,7 @@ class RoleLoginController extends GetxController {
       }
     } catch (e) {
       print("Error during login: $e");
-      Get.snackbar("Error","Check Internet Connectivity");
+      Get.snackbar("Error", "Check Internet Connectivity");
     } finally {
       isLoading(false);
     }
@@ -151,23 +151,6 @@ class RoleLoginController extends GetxController {
       }
     }
   }
-
-//   void logout() async {
-//     userId.value = '';
-//     userName.value = '';
-//     email.value = '';
-//     mobileNo.value = '';
-//     role.value = '';
-//     hospitalId.value = '';
-//     isActive.value = false;
-//     hospital.value = '';
-
-//     final prefs = await SharedPreferences.getInstance();
-//     await prefs.clear();
-
-//     Get.offAll(MultiLogin());
-//   }
-// }
 
   void logout() async {
     final prefs = await SharedPreferences.getInstance();

@@ -71,18 +71,19 @@ class PatientDetailsScreen extends StatelessWidget {
                                 'Application ID:', patient.ApplicationID),
                             _buildTableRow('Hospital Name:',
                                 patient.hospitalName), // Added Hospital Name
-                            _buildTableRow('Created By:', patient.createdBy),
+                            // _buildTableRow('Created By:', patient.createdBy),
                             _buildTableRow(
                                 'Data Entry Name:', patient.dataentryName),
-
+      
                             _buildTableRow('Doctor Name:', patient.doctorName),
                             _buildTableRow('Age:', patient.age),
                             _buildTableRow('Gender:', patient.gender),
+                             _buildTableRow('Weight:', patient.weight),
                             if (patient.caste != "")
                               _buildTableRow('Caste:', patient.caste),
                             if (patient.idCard != "")
                               _buildTableRow('ID Card No:', patient.idCard),
-
+      
                             _buildTableRow(
                                 'Mobile:', patient.mobileNo.toString()),
                             if (patient.emailId != "")

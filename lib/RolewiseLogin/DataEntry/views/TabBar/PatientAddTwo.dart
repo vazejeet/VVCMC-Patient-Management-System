@@ -756,7 +756,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import '../../../../utils/color.dart';
 import '../../controllers/patients/patientAdd.dart';
 import '../dataentrybottombar.dart';
@@ -767,6 +766,7 @@ class PatientAddTwo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
+      // ignore: deprecated_member_use
       child: WillPopScope(
         onWillPop: () async {
           // Navigate to the dashboard page
@@ -842,12 +842,13 @@ class PatientAddTwo extends StatelessWidget {
                         } else {
                           return Column(
                             children: [
-                              InkWell(
+                        GestureDetector(
+                     
                                 onTap: () {
-                                  Get.to(() => PatientForm());
-                                },
+    Get.to(() => PatientForm(), arguments: {"mobile": controller.mobileNo.value});
+  },
                                 child: Container(
-                                  margin: EdgeInsets.only(left: 50, right: 40),
+                                  margin: EdgeInsets.only(left: 50, right: 50),
                                   padding: EdgeInsets.symmetric(vertical: 15),
                                   decoration: BoxDecoration(
                                     color: Appcolor.Primary,
@@ -881,25 +882,6 @@ class PatientAddTwo extends StatelessWidget {
     );
   }
 
-  Future<void> _onClearData() async {
-    controller.formKey1.currentState?.reset();
-    controller.patientName.value = '';
-    controller.aadharCardNumber.value = '';
-    controller.mobileNo.value = '';
-    controller.emailId.value = '';
-    controller.selectedDate.value = null;
-    controller.age.value = '';
-    controller.gender.value = '';
-    controller.caste.value = '';
-    controller.address.value = '';
-    controller.title.value = '';
-    controller.weight.value = '';
-    controller.symptoms.clear(); // Clear symptoms if needed
-    controller.selectedSymptoms.clear(); // Clear selected symptoms
-    controller.selectedDoctor.value = ''; // Clear doctor selection
-  }
-
-// Add this reset logic where necessary, such as in the mobile number field change handler
 
   Widget _buildPatientAddTwoFields(
       {required bool enabled, required BuildContext context}) {
@@ -907,7 +889,7 @@ class PatientAddTwo extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildTextField(
-          label: 'Patient Name',
+          label: 'Patient Name*',
           controllerValue: controller.patientName,
           enabled: enabled,
         ),
@@ -917,7 +899,7 @@ class PatientAddTwo extends StatelessWidget {
           controllerValue: controller.aadharCardNumber,
           enabled: enabled,
         ),
-        const SizedBox(height: 10),
+       // const SizedBox(height: 10),
         // _buildTextFieldss(
         //   label: 'Email ID',
         //   controllerValue: controller.emailId,
@@ -927,56 +909,41 @@ class PatientAddTwo extends StatelessWidget {
         // ),
 
         // Check if the data is not empty before displaying the field
-controller.emailId.isNotEmpty 
-    ? _buildTextFieldss(
-        label: 'Email ID',
-        controllerValue: controller.emailId,
-        enabled: true,
-        isRequired: false,
-        fieldType: 'email',
-      ) 
-    : SizedBox.shrink(), // Hide the field if data is empty
+// controller.emailId.isNotEmpty 
+//     ? _buildTextFieldss(
+//         label: 'Email ID',
+//         controllerValue: controller.emailId,
+//         enabled: true,
+//         isRequired: false,
+//         fieldType: 'email',
+//       ) 
+//     : SizedBox.shrink(), // Hide the field if data is empty
 
 
         const SizedBox(height: 10),
-        const Text(
-          'Date of Birth',
-          style: TextStyle(fontSize: 16),
+      
+
+         _buildTextField(
+          label: 'Age*',
+          controllerValue: controller.age,
+          enabled: enabled,
         ),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.calendar_today),
-              onPressed: () => controller.selectDate(context),
-            ),
-            const SizedBox(width: 10),
-            Obx(() => Text(
-                  controller.selectedDate.value != null
-                      ? DateFormat('dd-MM-yyyy')
-                          .format(controller.selectedDate.value!)
-                      : 'Select Date',
-                  style: const TextStyle(fontSize: 16),
-                )),
-            const SizedBox(width: 10),
-            Obx(() => Text(
-                  controller.age.value.isNotEmpty
-                      ? 'Age: ${controller.age.value} years'
-                      : 'Age: --',
-                  style: const TextStyle(fontSize: 16),
-                )),
-          ],
+      
+        const SizedBox(height: 10),
+         _buildTextField(
+          label: 'Gender*',
+          controllerValue: controller.gender,
+          enabled: enabled,
         ),
+        // const Text(
+        //   'Gender*',
+        //   style: TextStyle(fontSize: 16),
+        // ),
+        // const SizedBox(height: 6),
+        // _buildGenderRadio(),
         const SizedBox(height: 10),
         const Text(
-          'Gender',
-          style: TextStyle(fontSize: 16),
-        ),
-        const SizedBox(height: 6),
-        _buildGenderRadio(),
-        const SizedBox(height: 10),
-        const Text(
-          'Address',
+          'Address*',
           style: TextStyle(fontSize: 16),
         ),
         const SizedBox(height: 6),
@@ -994,7 +961,7 @@ controller.emailId.isNotEmpty
         const SizedBox(height: 10),
 
         const Text(
-          'Weight',
+          'Weight*',
           style: TextStyle(fontSize: 16),
         ),
         const SizedBox(height: 6),
@@ -1013,13 +980,13 @@ controller.emailId.isNotEmpty
         const SizedBox(height: 10),
 
         const Text(
-          'Caste',
+          'Category',
           style: TextStyle(fontSize: 16),
         ),
         const SizedBox(height: 6),
         Obx(() => DropdownButtonFormField<String>(
               decoration: InputDecoration(
-                hintText: 'Select Caste',
+                hintText: 'Select Category',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -1047,7 +1014,7 @@ controller.emailId.isNotEmpty
             )),
         const SizedBox(height: 10),
         const Text(
-          'Symptoms',
+          'Symptoms*',
           style: TextStyle(fontSize: 16),
         ),
         const SizedBox(height: 6),
@@ -1062,7 +1029,7 @@ controller.emailId.isNotEmpty
 
         // Doctor
         const Text(
-          'Doctor Name',
+          'Doctor Name*',
           style: TextStyle(
             fontSize: 16,
           ),
@@ -1220,22 +1187,7 @@ controller.emailId.isNotEmpty
     );
   }
 
-  Widget _buildTextFieldabha(
-      {required String label,
-      required RxString controllerValue,
-      required bool enabled}) {
-    return TextFormField(
-      controller: TextEditingController(text: controllerValue.value),
-      maxLength: 14,
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(),
-        enabled: enabled,
-      ),
-      onSaved: (value) => controllerValue.value = value!,
-      // validator: (value) => value!.isEmpty ? 'Enter Abha No' : null,
-    );
-  }
+
 
 // Widget for symtoms dropdown
 

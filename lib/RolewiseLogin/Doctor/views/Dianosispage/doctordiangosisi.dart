@@ -1,14 +1,14 @@
-import 'package:opd_app/RolewiseLogin/Doctor/views/doctorbottombar.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../../../../utils/color.dart';
 import '../../../controller/roleslogincontroller.dart';
 import '../../controllers/Diagnosiscontrollers.dart';
+import '../doctorbottombar.dart';
 
 class DiagnosisByDoctorPage extends StatelessWidget {
   final String weight;
@@ -124,10 +124,13 @@ class DiagnosisByDoctorPage extends StatelessWidget {
                     diagnosisController.refController,
                   ),
                   const SizedBox(height: 10),
-                  _buildTextField(
-                    "Follow Up",
-                    diagnosisController.followUpController,
-                  ),
+                  // _buildTextField(
+                  //   "Follow Up",
+                  //   diagnosisController.followUpController,
+                  // ),
+
+                   _rebuildTextField("Follow Up", diagnosisController.daysController, isNumber: true, onChanged: diagnosisController.calculateDate),
+            // _rebuildTextField("Calculated Date", diagnosisController.dateController, isEditable: false),
                   const SizedBox(height: 16),
                   Center(
                     child: ElevatedButton.icon(
@@ -173,7 +176,7 @@ class DiagnosisByDoctorPage extends StatelessWidget {
       "Diagnosis": diagnosisController.selectedDiagnosis.join(', '),
       "Medicine": diagnosisController.selectedMedicine.join(', '),
       "ref": diagnosisController.refController.text,
-      "followup": diagnosisController.followUpController.text,
+      "followup": diagnosisController.dateController.text,                     // change by followupcontroller
       "Remarks": remarksController.text,
     };
 
@@ -193,6 +196,7 @@ class DiagnosisByDoctorPage extends StatelessWidget {
         diagnosisController.hospitalNameController.text.isNotEmpty &&
         diagnosisController.hospitalIdController.text.isNotEmpty &&
         diagnosisController.selectedDiagnosis.isNotEmpty &&
+        diagnosisController.selectedTests.isNotEmpty &&
         diagnosisController.selectedMedicine.isNotEmpty;
   }
 
@@ -615,6 +619,93 @@ class DiagnosisByDoctorPage extends StatelessWidget {
   //   );
   // }
 
+
+
+Widget _rebuildTextField(String label, TextEditingController controller,
+      {bool isEditable = true,
+      bool isNumber = false,
+      Function(String)? onChanged}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      child: isNumber
+          ? DropdownButtonFormField<int>(
+              value: int.tryParse(controller.text),
+              decoration: InputDecoration(
+                labelText: label,
+                labelStyle: const TextStyle(color: Colors.black),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              ),
+              items: [3, 5, 15, 30]
+                  .map((value) => DropdownMenuItem(
+                        value: value,
+                        child: Text(value.toString()),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  controller.text = value.toString();
+                  if (onChanged != null) {
+                    onChanged(value.toString());
+                  }
+                }
+              },
+            )
+          : TextFormField(
+              controller: controller,
+              enabled: isEditable,
+              keyboardType:
+                  isNumber ? TextInputType.number : TextInputType.text,
+              decoration: InputDecoration(
+                labelText: label,
+                labelStyle: const TextStyle(color: Colors.black),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              ),
+              onChanged: onChanged, // Callback when user enters data
+            ),
+    );
+  }
+
+  // Widget _rebuildTextField(String label, TextEditingController controller,
+  //     {bool isEditable = true, bool isNumber = false, Function(String)? onChanged}) {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(vertical: 12.0),
+  //     child: TextFormField(
+  //       controller: controller,
+  //       enabled: isEditable,
+  //       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+  //       decoration: InputDecoration(
+  //         labelText: label,
+  //         labelStyle: const TextStyle(color: Colors.black),
+  //         border: OutlineInputBorder(
+  //           borderRadius: BorderRadius.circular(12),
+  //         ),
+  //         enabledBorder: OutlineInputBorder(
+  //           borderRadius: BorderRadius.circular(12),
+  //         ),
+  //         focusedBorder: OutlineInputBorder(
+  //           borderRadius: BorderRadius.circular(12),
+  //         ),
+  //         contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+  //       ),
+  //       onChanged: onChanged, // Callback when user enters data
+  //     ),
+  //   );
+  // }
+
   Widget _buildTextField(String label, TextEditingController controller,
       {bool isEditable = true}) {
     return Padding(
@@ -714,9 +805,10 @@ class DiagnosisByDoctorPage extends StatelessWidget {
                     _buildPdfTableRow('Gender:', gender),
                     _buildPdfTableRow('Age:', age),
                     _buildPdfTableRow('Weight:', weight),
-                    _buildPdfTableRow('Patient ID:', ApplicationID),
-                    _buildPdfTableRow('Hospital Name:',
-                        diagnosisData["HospitalName"]?.toString() ?? ""),
+                    // _buildPdfTableRow('Patient ID:', ApplicationID),
+                     _buildPdfTableRow('Mobile Number:', mobileNo),
+                    // _buildPdfTableRow('Hospital Name:',
+                    //     diagnosisData["HospitalName"]?.toString() ?? ""),
                     _buildPdfTableRow(
                         'Symptoms:', diagnosisData["Title"]?.toString() ?? ""),
                     _buildPdfTableRow(
@@ -725,15 +817,17 @@ class DiagnosisByDoctorPage extends StatelessWidget {
                         diagnosisData["DoctorName"]?.toString() ?? ""),
                     _buildPdfTableRow('Diagnosis:',
                         diagnosisData["Diagnosis"]?.toString() ?? ""),
+                    // _buildPdfTableRow('Medicine:',
+                    //     diagnosisData["Medicine"]?.toString() ?? ""),
                     _buildPdfTableRow('Medicine:',
-                        diagnosisData["Medicine"]?.toString() ?? ""),
+                        _formatMedicine(diagnosisData["Medicine"])),
                     _buildPdfTableRow(
                         'Refer:', diagnosisData["ref"]?.toString() ?? ""),
                     _buildPdfTableRow('Follow Up:',
                         diagnosisData["followup"]?.toString() ?? ""),
                   ],
                 ),
-                pw.SizedBox(height: 20),
+                pw.SizedBox(height: 10),
                 pw.Text('Remarks:',
                     style: pw.TextStyle(
                         fontSize: 18, fontWeight: pw.FontWeight.bold)),
@@ -764,9 +858,32 @@ class DiagnosisByDoctorPage extends StatelessWidget {
         ),
         pw.Padding(
           padding: const pw.EdgeInsets.all(8),
-          child: pw.Text(value),
+          child: pw.Text(value, softWrap: true, textAlign: pw.TextAlign.left),
         ),
       ],
     );
   }
+
+// Function to format multiple medicines into separate lines
+  String _formatMedicine(dynamic medicineData) {
+    if (medicineData is List) {
+      return medicineData.join('\n'); // Join medicines line by line
+    }
+    return medicineData?.toString() ?? "";
+  }
+  // pw.TableRow _buildPdfTableRow(String label, String value) {
+  //   return pw.TableRow(
+  //     children: [
+  //       pw.Padding(
+  //         padding: const pw.EdgeInsets.all(8),
+  //         child: pw.Text(label,
+  //             style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+  //       ),
+  //       pw.Padding(
+  //         padding: const pw.EdgeInsets.all(8),
+  //         child: pw.Text(value),
+  //       ),
+  //     ],
+  //   );
+  // }
 }

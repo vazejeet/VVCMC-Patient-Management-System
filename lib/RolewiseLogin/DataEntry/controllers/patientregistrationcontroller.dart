@@ -1,5 +1,6 @@
 
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -146,38 +147,7 @@ class PatientAddFormController extends GetxController {
     return data != null ? List<String>.from(data.where((e) => e != null)) : [];
   }
 
-    void selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(), // Default to current date
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-
-    // If the user presses "OK" without selecting a date, it will set the current date
-    if (picked != null) {
-      selectedDate.value = picked; // Set the picked date
-    } else {
-      selectedDate.value =
-          DateTime.now(); // If no date is picked, set to current date
-    }
-
-    calculateAge();
-  }
-   void calculateAge() {
-    final currentDate = DateTime.now();
-    final selected =
-        selectedDate.value ?? currentDate; // Ensure we have a selected date
-
-    int years = currentDate.year - selected.year;
-    if (currentDate.month < selected.month ||
-        (currentDate.month == selected.month &&
-            currentDate.day < selected.day)) {
-      years--;
-    }
-
-    age.value = '$years'; // Set age as a string
-  }
+ 
 
 void submitForm() async {
     if (formKey.currentState!.validate()) {

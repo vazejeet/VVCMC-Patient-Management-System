@@ -168,7 +168,6 @@ class DashboarPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 600;
 
     return SafeArea(
       child: Scaffold(

@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import 'package:intl/intl.dart';
-
 import '../../../../utils/color.dart';
 import '../patientregistrationcontroller.dart';
 
 class PatientForm extends StatelessWidget {
   final PatientAddFormController controller =
       Get.put(PatientAddFormController());
+      final TextEditingController mobileController = TextEditingController();
+   PatientForm() {
+    // Mobile number ko GetX arguments se fetch karna
+    var mobileNumber = Get.arguments != null ? Get.arguments["mobile"] : "";
+    mobileController.text = mobileNumber;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,13 +44,15 @@ class PatientForm extends StatelessWidget {
                     const SizedBox(height: 10),
                     // Mobile Number
                     const Text(
-                      'Mobile Number',
+                      'Mobile Number*',
                       style: TextStyle(
                         fontSize: 16,
                       ),
                     ),
                     const SizedBox(height: 6),
+                
                     TextFormField(
+                      controller: mobileController, // Prefilled Mobile Number
                       decoration: InputDecoration(
                         hintText: 'Mobile Number',
                         border: OutlineInputBorder(
@@ -56,8 +61,7 @@ class PatientForm extends StatelessWidget {
                       ),
                       keyboardType: TextInputType.phone,
                       maxLength: 10,
-                      onSaved: (value) =>
-                          controller.mobileNumber.value = value!,
+                      onSaved: (value) => controller.mobileNumber.value = value!,
                       validator: (value) =>
                           value!.isEmpty ? 'Enter Mobile Number' : null,
                     ),
@@ -65,7 +69,7 @@ class PatientForm extends StatelessWidget {
 
                     // Patient Name
                     const Text(
-                      'Patient Name',
+                      'Patient Name*',
                       style: TextStyle(
                         fontSize: 16,
                       ),
@@ -85,23 +89,23 @@ class PatientForm extends StatelessWidget {
                     const SizedBox(height: 16),
 
                     // Email ID
-                    const Text(
-                      'Email ID',
-                      style: TextStyle(
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        hintText: 'Email ID',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                      onSaved: (value) => controller.emailId.value = value!,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
+                    // const Text(
+                    //   'Email ID',
+                    //   style: TextStyle(
+                    //     fontSize: 16,
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 6),
+                    // TextFormField(
+                    //   decoration: InputDecoration(
+                    //     hintText: 'Email ID',
+                    //     border: OutlineInputBorder(
+                    //       borderRadius: BorderRadius.circular(5),
+                    //     ),
+                    //   ),
+                    //   onSaved: (value) => controller.emailId.value = value!,
+                    //   keyboardType: TextInputType.emailAddress,
+                    // ),
 
                     const SizedBox(height: 10),
                     const Text(
@@ -229,213 +233,76 @@ class PatientForm extends StatelessWidget {
                             )
                           : const SizedBox.shrink(),
                     ),
-//                     const SizedBox(height: 6),
-//                     Obx(
-//                       () => DropdownButtonFormField<String>(
-//                         value: controller.selectedDocument.value.isEmpty
-//                             ? null
-//                             : controller.selectedDocument.value,
-//                         decoration: InputDecoration(
-//                           border: OutlineInputBorder(
-//                             borderRadius: BorderRadius.circular(5),
-//                           ),
-//                         ),
-//                         hint: const Text('Select ID Card Type'),
-//                         items: controller.documentTypes.map((String type) {
-//                           return DropdownMenuItem<String>(
-//                             value: type,
-//                             child: Text(type),
-//                           );
-//                         }).toList(),
-//                         onChanged: (value) {
-//                           // Reset input and validation fields on card type change
-//                           controller.selectedDocument.value = value ?? '';
-//                           controller.documentNumber.value =
-//                               ''; // Clear document number
-//                           controller.validationError.value =
-//                               ''; // Clear validation error
-//                         },
-//                       ),
-//                     ),
-//                     const SizedBox(height: 20),
 
-// // TextFormField for entering document number
-//                     Obx(
-//                       () => controller.selectedDocument.value.isNotEmpty
-//                           ? Column(
-//                               crossAxisAlignment: CrossAxisAlignment.start,
-//                               children: [
-//                                 Text(
-//                                   '${controller.selectedDocument.value} Number',
-//                                   style: const TextStyle(
-//                                     fontSize: 16,
-//                                   ),
-//                                 ),
-//                                 const SizedBox(height: 6),
-//                                 TextFormField(
-//                                   decoration: InputDecoration(
-//                                     hintText:
-//                                         'Enter ${controller.selectedDocument.value} Number',
-//                                     border: OutlineInputBorder(
-//                                       borderRadius: BorderRadius.circular(5),
-//                                     ),
-//                                     errorText:
-//                                         controller.selectedDocument.value ==
-//                                                     'Aadharcard' &&
-//                                                 controller.aadharCardNumber
-//                                                     .value.isNotEmpty &&
-//                                                 controller.aadharCardNumber
-//                                                         .value.length ==
-//                                                     12 &&
-//                                                 !isValidAadhaarV1(controller
-//                                                     .aadharCardNumber.value)
-//                                             ? 'Invalid Aadhaar Number'
-//                                             : null,
-//                                   ),
-//                                   keyboardType:
-//                                       controller.selectedDocument.value ==
-//                                               'Aadharcard'
-//                                           ? TextInputType.number
-//                                           : TextInputType.text,
-//                                   maxLength: controller
-//                                               .selectedDocument.value ==
-//                                           'Aadharcard'
-//                                       ? 12
-//                                       : controller.selectedDocument.value ==
-//                                                   'Pancard' ||
-//                                               controller
-//                                                       .selectedDocument.value ==
-//                                                   'VoterID'
-//                                           ? 10
-//                                           : controller.selectedDocument.value ==
-//                                                   'Abhacard'
-//                                               ? 14
-//                                               : 0,
-//                                   onChanged: (value) {
-//                                     controller.documentNumber.value = value;
 
-//                                     // Validate the entered value
-//                                     final requiredLength = controller
-//                                                 .selectedDocument.value ==
-//                                             'Aadharcard'
-//                                         ? 12
-//                                         : controller.selectedDocument.value ==
-//                                                     'Pancard' ||
-//                                                 controller.selectedDocument
-//                                                         .value ==
-//                                                     'VoterID'
-//                                             ? 10
-//                                             : controller.selectedDocument
-//                                                         .value ==
-//                                                     'Abhacard'
-//                                                 ? 14
-//                                                 : 0;
+                    const SizedBox(height: 10),
 
-//                                     if (value.length != requiredLength) {
-//                                       controller.validationError.value =
-//                                           '${controller.selectedDocument.value} Number must be exactly $requiredLength characters.';
-//                                     } else {
-//                                       controller.validationError.value =
-//                                           ''; // Clear error
-//                                     }
-//                                   },
-//                                 ),
-//                               ],
-//                             )
-//                           : const SizedBox.shrink(),
-//                     ),
-
-                    const SizedBox(height: 16),
-                    // Date of Birth Picker Row
                     const Text(
-                      'Date of Birth',
+                      'Age*',
                       style: TextStyle(
                         fontSize: 16,
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        // Calendar Icon Button
-                        IconButton(
-                          icon: const Icon(Icons.calendar_today),
-                          onPressed: () => controller.selectDate(context),
-                        ),
-                        const SizedBox(width: 5),
 
-                        // Selected Date Display
-                        Expanded(
-                          child: Obx(() => Container(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
-                                child: Center(
-                                  child: Text(
-                                    controller.selectedDate.value != null
-                                        ? DateFormat('dd-MM-yyyy').format(
-                                            controller.selectedDate.value!)
-                                        : 'Select Date',
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                ),
-                              )),
+                    TextFormField(
+                      // maxLength: 3,
+                    //  keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        hintText: 'Enter Age',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(5),
                         ),
-                        const SizedBox(width: 5),
-
-                        // Age Display
-                        Obx(() => Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              child: Center(
-                                child: Text(
-                                  controller.age.value.isNotEmpty
-                                      ? 'Age: ${controller.age.value} years'
-                                      : 'Age: --',
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                              ),
-                            )),
-                      ],
+                      ),
+                      onSaved: (value) => controller.age.value = value!,
+                      validator: (value) => value!.isEmpty ? 'Enter Age' : null,
                     ),
 
                     const SizedBox(height: 10),
 
                     // Gender Radio Buttons
                     const Text(
-                      'Gender',
+                      'Gender*',
                       style: TextStyle(
                         fontSize: 16,
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Obx(() => Radio<String>(
-                              value: 'Male',
-                              groupValue: controller.gender.value,
-                              onChanged: (value) =>
-                                  controller.gender.value = value!,
-                            )),
-                        const Text('Male'),
-                        Obx(() => Radio<String>(
-                              value: 'Female',
-                              groupValue: controller.gender.value,
-                              onChanged: (value) =>
-                                  controller.gender.value = value!,
-                            )),
-                        const Text('Female'),
-                        Obx(() => Radio<String>(
-                              value: 'Other',
-                              groupValue: controller.gender.value,
-                              onChanged: (value) =>
-                                  controller.gender.value = value!,
-                            )),
-                        const Text('Other'),
-                      ],
-                    ),
+                                      Obx(() => DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            hintText: 'Select Gender',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                          ),
+                          value: controller.gender.value.isEmpty
+                              ? null
+                              : controller.gender.value,
+                          items: <String>[
+                            'Male',
+                            'Female',
+                            'Male-Child',
+                            'Female-Child',
+                            'Other',
+                          ].map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            controller.gender.value = value!;
+                          },
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Select Gender'
+                              : null,
+                        )),
+                   
                     const SizedBox(height: 10),
 
                     // Weight...
                     const Text(
-                      'Weight',
+                      'Weight*',
                       style: TextStyle(
                         fontSize: 16,
                       ),
@@ -459,7 +326,7 @@ class PatientForm extends StatelessWidget {
 
                     // Address
                     const Text(
-                      'Address',
+                      'Address*',
                       style: TextStyle(
                         fontSize: 16,
                       ),
@@ -480,7 +347,7 @@ class PatientForm extends StatelessWidget {
 
                     // Caste Dropdown
                     const Text(
-                      'Caste',
+                      'Category',
                       style: TextStyle(
                         fontSize: 16,
                       ),
@@ -488,7 +355,7 @@ class PatientForm extends StatelessWidget {
                     const SizedBox(height: 6),
                     Obx(() => DropdownButtonFormField<String>(
                           decoration: InputDecoration(
-                            hintText: 'Select Caste',
+                            hintText: 'Select Category',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(5),
                             ),
@@ -519,7 +386,7 @@ class PatientForm extends StatelessWidget {
 
                     // Symptoms (Title)
                     const Text(
-                      'Symptoms',
+                      'Symptoms*',
                       style: TextStyle(
                         fontSize: 16,
                       ),
@@ -536,7 +403,7 @@ class PatientForm extends StatelessWidget {
 
                     // Doctor
                     const Text(
-                      'Doctor Name',
+                      'Doctor Name*',
                       style: TextStyle(
                         fontSize: 16,
                       ),

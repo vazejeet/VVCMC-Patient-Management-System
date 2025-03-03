@@ -71,10 +71,7 @@ class visit extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          leading: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Image.asset("assets/logo.png"),
-          ),
+          leading: Image.asset("assets/logo.png"),
           title: const Text(
             "Patients",
             style: TextStyle(

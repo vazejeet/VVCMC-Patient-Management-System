@@ -130,7 +130,7 @@ class PatientScreen extends StatelessWidget {
                           prefSnapshot.data?.getString('HospitalId');
                       String? hospitalName =
                           prefSnapshot.data?.getString('UserName');
-
+      
                       if (hospitalId != null &&
                           hospitalId.isNotEmpty &&
                           hospitalName != null &&
@@ -149,7 +149,7 @@ class PatientScreen extends StatelessWidget {
                                           ?.dateTime !=
                                       null;
                             }).toList();
-
+      
                             if (filteredPatientsList.isEmpty) {
                               return const Center(
                                 child: Text(
@@ -159,12 +159,12 @@ class PatientScreen extends StatelessWidget {
                                 ),
                               );
                             }
-
+      
                             return ListView.builder(
                               itemCount: filteredPatientsList.length,
                               itemBuilder: (context, index) {
                                 var patient = filteredPatientsList[index];
-
+      
                                 String diagnosisDate = 'No Date Available';
                                 if (patient.symptoms.isNotEmpty) {
                                   // Extract all valid dates and find the most recent one
@@ -176,7 +176,7 @@ class PatientScreen extends StatelessWidget {
                                       .map((symptom) => DateTime.parse(
                                           symptom.diagnosisData!.dateTime!))
                                       .toList();
-
+      
                                   if (diagnosisDates.isNotEmpty) {
                                     DateTime lastDate = diagnosisDates
                                         .reduce((a, b) => a.isAfter(b) ? a : b);
@@ -184,7 +184,7 @@ class PatientScreen extends StatelessWidget {
                                         .format(lastDate);
                                   }
                                 }
-
+      
                                 return Card(
                                   color: Appcolor.Primary,
                                   margin: const EdgeInsets.symmetric(

@@ -1,8 +1,7 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../views/doctorbottombar.dart';
@@ -33,6 +32,9 @@ class DiagnosisController extends GetxController {
   RxList<TextEditingController> testsAdditionalFields = <TextEditingController>[].obs;
   RxList<TextEditingController> diagnosisAdditionalFields = <TextEditingController>[].obs;
   RxList<TextEditingController> medicineAdditionalFields = <TextEditingController>[].obs;
+
+   final TextEditingController daysController = TextEditingController();
+  final TextEditingController dateController = TextEditingController();
 
   @override
   void onInit() {
@@ -122,7 +124,29 @@ class DiagnosisController extends GetxController {
     await prefs.setString('Hospital', hospitalName);
     await prefs.setString('HospitalId', hospitalId);
   }
+
+
+   void calculateDate(String value) {
+    if (value.isEmpty) return;
+
+    int daysToAdd = int.tryParse(value) ?? 0;
+    DateTime currentDate = DateTime.now();
+    int addedDays = 0;
+
+    while (addedDays < daysToAdd) {
+      currentDate = currentDate.add(Duration(days: 1));
+
+      // Skip Sunday (weekday == 7)
+      if (currentDate.weekday != DateTime.sunday) {
+        addedDays++;
+      }
+    }
+     String formattedDate = DateFormat('dd-MM-yyyy').format(currentDate);
+    dateController.text = formattedDate;
+  }
+
+
+
+
+
 }
-
-
-
